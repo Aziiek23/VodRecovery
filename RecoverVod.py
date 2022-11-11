@@ -89,6 +89,9 @@ def print_clip_format_menu():
 def get_default_directory():
     return os.path.expanduser("~/Documents/")
 
+def get_downloads_directory():
+    return os.path.expanduser("~/Downloads/")
+
 
 def generate_log_filename(streamer, vod_id):
     log_filename = os.path.join(get_default_directory(), streamer + "_" + vod_id + "_log.txt")
@@ -615,7 +618,10 @@ def get_random_clips():
 def bulk_clip_recovery():
     vod_counter, total_counter, valid_counter, iteration_counter = 0, 0, 0, 0
     streamer = input("Enter streamer name: ")
-    file_path = input("Enter full path of sullygnome CSV file: ").replace('"', '')
+    csv_rows = input("Enter how many rows you want in the CSV (10, 25, 50, 100): ")
+    csv_date = input("Enter CSV Date (2020march): ")
+    file_path = get_sullygnome_csv(streamer, csv_rows, csv_date)
+    print(file_path)
     user_option = input("Do you want to download all clips recovered (Y/N)? ")
     print_clip_format_menu()
     clip_format = input("Please choose an option: ").split(" ")
@@ -668,10 +674,14 @@ def get_sullygnome_csv(streamer, rows, csv_date):
         driver.find_element(By.XPATH, """//*[@id="tblControl_length"]/label/select/option[4]""").click()
     else:
         print("Invalid Option! Returning to main menu.")
-    time.sleep(2)
+    time.sleep(5)
     driver.find_element(By.XPATH, """//*[@id="tblControl_wrapper"]/div[1]/div[1]/button[1]""").click()
     time.sleep(2)
     driver.close()
+    for path, currentDirectory, files in os.walk(get_downloads_directory()):
+        for file in files:
+            if file.endswith("SullyGnome.csv"):
+                return os.path.join(path, file)
 
 
 def download_m3u8(url):
@@ -761,10 +771,6 @@ def run_script():
             elif clip_type == 2:
                 get_random_clips()
             elif clip_type == 3:
-                streamer = input("Enter streamer name: ")
-                csv_rows = input("Enter how many rows you want in the CSV (10, 25, 50, 100): ")
-                csv_date = input("Enter CSV Date (2020march): ")
-                get_sullygnome_csv(streamer, csv_rows, csv_date)
                 bulk_clip_recovery()
             elif clip_type == 4:
                 exit()
