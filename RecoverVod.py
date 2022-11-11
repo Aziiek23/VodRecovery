@@ -2,6 +2,7 @@ import datetime
 import hashlib
 import os
 import random
+import time
 import re
 from datetime import timedelta
 import grequests
@@ -9,6 +10,8 @@ import requests
 from bs4 import BeautifulSoup
 from moviepy.editor import concatenate_videoclips, VideoFileClip
 from natsort import natsorted
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 
 domains = ["https://vod-secure.twitch.tv/",
            "https://vod-metro.twitch.tv/",
@@ -646,6 +649,31 @@ def bulk_clip_recovery():
         total_counter, valid_counter, iteration_counter = 0, 0, 0
 
 
+def get_sullygnome_csv(streamer, rows, csv_date):
+    tracker_url = "https://sullygnome.com/channel/{}/{}".format(streamer, csv_date)
+    driver = webdriver.Chrome()
+    driver.get(tracker_url)
+    driver.maximize_window()
+    driver.find_element(By.XPATH, """//*[@id="pageSubHeaderLeft"]/div[2]/div/a""").click()
+    time.sleep(2)
+    driver.find_element(By.XPATH, """//*[@id="tblControl_length"]/label/select""").click()
+    time.sleep(2)
+    if rows == "10":
+        driver.find_element(By.XPATH, """//*[@id="tblControl_length"]/label/select/option[1]""").click()
+    elif rows == "25":
+        driver.find_element(By.XPATH, """//*[@id="tblControl_length"]/label/select/option[2]""").click()
+    elif rows == "50":
+        driver.find_element(By.XPATH, """//*[@id="tblControl_length"]/label/select/option[3]""").click()
+    elif rows == "100":
+        driver.find_element(By.XPATH, """//*[@id="tblControl_length"]/label/select/option[4]""").click()
+    else:
+        print("Invalid Option! Returning to main menu.")
+    time.sleep(2)
+    driver.find_element(By.XPATH, """//*[@id="tblControl_wrapper"]/div[1]/div[1]/button[1]""").click()
+    time.sleep(2)
+    driver.close()
+
+
 def download_m3u8(url):
     videos = []
     ts_video_list = natsorted(get_valid_segments(get_all_playlist_segments(url)))
@@ -733,6 +761,10 @@ def run_script():
             elif clip_type == 2:
                 get_random_clips()
             elif clip_type == 3:
+                streamer = input("Enter streamer name: ")
+                csv_rows = input("Enter how many rows you want in the CSV (10, 25, 50, 100): ")
+                csv_date = input("Enter CSV Date (2020march): ")
+                get_sullygnome_csv(streamer, csv_rows, csv_date)
                 bulk_clip_recovery()
             elif clip_type == 4:
                 exit()
