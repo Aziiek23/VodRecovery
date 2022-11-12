@@ -671,7 +671,7 @@ def get_sullygnome_csv(streamer, rows, csv_date):
     driver.close()
     for path, currentDirectory, files in os.walk(get_downloads_directory()):
         for file in files:
-            if file.endswith("SullyGnome.csv"):
+            if re.split(r'(\d+)', csv_date)[1].lower() in file.lower() and re.split(r'(\d+)', csv_date)[2].lower() in file.lower() and file.lower().startswith(streamer.lower()) and file.lower().endswith("sullygnome.csv"):
                 return os.path.join(path, file)
 
 
